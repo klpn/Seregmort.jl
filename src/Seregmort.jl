@@ -266,20 +266,24 @@ function propscatsexes(numframe, denomframe, numdim, denomdim, numcause, denomca
 		sexframes[sex]["propframe"] = prop_reggrp(numframe, denomframe,
 			sex, agelist, agemean)
 	end
-	femvals = sexframes["2"]["propframe"][:value]
-	malevals = sexframes["1"]["propframe"][:value]
-	scatter(femvals, malevals)
-	for (i, regcode) in enumerate(sexframes["2"]["propframe"][:Region])
-		annotate(regcode, (femvals[i], malevals[i]))
+	femprop = sexframes["2"]["propframe"][:value]
+	maleprop = sexframes["1"]["propframe"][:value]
+	regcodes = sexframes["2"]["propframe"][:Region]
+	regals = map((x)->regalias(x, numdim), regcodes)
+	scatter(femprop, maleprop)
+	for (i, regcode) in enumerate(regcodes)
+		annotate(regcode, (femprop[i], maleprop[i]))
 	end
 	xlabel(sexframes["2"]["alias"])
 	ylabel(sexframes["1"]["alias"])
 	axminimum = 0.95
 	axmaximum = 1.05
-	xlim(minimum(femvals)*axminimum, maximum(femvals)*axmaximum)
-	ylim(minimum(malevals)*axminimum, maximum(malevals)*axmaximum)
+	xlim(minimum(femprop)*axminimum, maximum(femprop)*axmaximum)
+	ylim(minimum(maleprop)*axminimum, maximum(maleprop)*axmaximum)
 	title(*("Döda $(numcauseal)/$(denomcauseal)\n",
 		"$(ageal) $(startyear)\u2013$(endyear)"))
+	DataFrame(code = regcodes, alias = regals, femprop = femprop,
+		maleprop = maleprop)
 end
 
 perc_round(value) = replace("$(round(value, 4))", ".", ",")
@@ -326,26 +330,27 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	endyear = maximum(yrints)
 	region_shp = shpreader.Reader(shapefname)
 	propframe = prop_reggrp(numframe, denomframe, sex, agelist, agemean)
-	regvalues = propframe[:Region]
+	regcodes = propframe[:Region]
+	regals = map((x)->regalias(x, numdim), regcodes)
 	prop = propframe[:value]
-	propdict = Dict(zip(regvalues, prop))
-	units = map(scb_to_unit, regvalues)
-	regdict = Dict(zip(units, regvalues))
+	propdict = Dict(zip(regcodes, prop))
+	units = map(scb_to_unit, regcodes)
+	regdict = Dict(zip(units, regcodes))
 	percentiles = percfunc(prop) 
 	ax = plt[:axes](projection = ccrs.TransverseMercator())
 	boundlist = []
 	facecolor = "red"
 	for region_rec in region_shp[:records]()
-		regcode = region_rec[:attributes]["G_UNIT"]
+		regunit = region_rec[:attributes]["G_UNIT"]
 		regend = region_rec[:attributes]["GET_END_YE"]
-		if (regcode in keys(regdict) && regend > 1995)
+		if (regunit in keys(regdict) && regend > 1995)
 			boundlist = vcat(boundlist, region_rec[:bounds])
 			xmean = mean([boundlist[end][1];
 				boundlist[end][3]])
 			ymean = mean([boundlist[end][2];
 				boundlist[end][4]])
 			for percentile in percentiles
-				if propdict[regdict[regcode]] <= percentile["value"]
+				if propdict[regdict[regunit]] <= percentile["value"]
 					facecolor = percentile["col"]
 					break
 				end
@@ -353,7 +358,7 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 			ax[:add_geometries](region_rec[:geometry],
 				ccrs.TransverseMercator(),
 				edgecolor = "black", facecolor = facecolor)
-			ax[:annotate](regdict[regcode], (xmean, ymean),
+			ax[:annotate](regdict[regunit], (xmean, ymean),
 				ha = "center")
 		end
 	end
@@ -382,6 +387,7 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	title(*("Döda $(numcauseal)/$(denomcauseal)\n",
 		"$(sexal) $(ageal) $(startyear)\u2013$(endyear)"))
 	show()
+	DataFrame(code = regcodes, alias = regals, prop = prop)
 end
 
 function catot_yrsdict(region, cause)
