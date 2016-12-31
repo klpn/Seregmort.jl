@@ -4,8 +4,9 @@ using JSONStat, Requests, DataStructures, DataFrames, PyCall, PyPlot
 import JSON
 @pyimport cartopy.io.shapereader as shpreader
 @pyimport cartopy.crs as ccrs
-export ndeaths, npop, propplot_dict, propplot, propscatsexes_dict, propscatsexes,
-propmap_dict, propmap, catot_yrsdict, capop_yrsdict, catot_mapdict, capop_mapdict,
+export metadata, alllregions, ndeaths, npop, 
+propplot_dict, propplot, propscatsexes_dict, propscatsexes,propmap_dict, propmap, 
+catot_yrsdict, capop_yrsdict, catot_mapdict, capop_mapdict,
 threep, fourp, fivep
 
 MORTURL = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak"
@@ -339,6 +340,10 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 		regend = region_rec[:attributes]["GET_END_YE"]
 		if (regcode in keys(regdict) && regend > 1995)
 			boundlist = vcat(boundlist, region_rec[:bounds])
+			xmean = mean([boundlist[end][1];
+				boundlist[end][3]])
+			ymean = mean([boundlist[end][2];
+				boundlist[end][4]])
 			for percentile in percentiles
 				if propdict[regdict[regcode]] <= percentile["value"]
 					facecolor = percentile["col"]
@@ -348,6 +353,8 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 			ax[:add_geometries](region_rec[:geometry],
 				ccrs.TransverseMercator(),
 				edgecolor = "black", facecolor = facecolor)
+			ax[:annotate](regdict[regcode], (xmean, ymean),
+				ha = "center")
 		end
 	end
 	xminimum = minimum([bound[1] for bound in boundlist])

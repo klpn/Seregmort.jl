@@ -117,7 +117,7 @@ Skåne and Västra Götaland County, during the period 1981--86 in the age inter
 65--69 and 70--74 years:
 ```julia
 pardict = capop_mapdict(unchanged_regions("county", metadata()), "23-28", 1981, 1986)
-propmap("65-69", "70-74", pardict, "2")
+propmap_dict("65-69", "70-74", "2", pardict)
 ```
 
 Death rates may be influenced by the age structure of a population, which may
