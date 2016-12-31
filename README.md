@@ -66,7 +66,7 @@ Using [cartopy](https://github.com/SciTools/cartopy), it is also possible to plo
 The script has been adapted to work with the shapefiles available (under a
 CCZero license) from National Archives of Sweden. You may download a [ZIP
 archive](http://riksarkivet.se/psi/NAD_Topografidata.zip) with these files and
-unzip it in the directory `naddata` under the `seregmort` directory. Data from
+unzip it in the directory `data` under the main `Seregmort` directory. Data from
 [one of the Excel metadata files](http://riksarkivet.se/psi/g_units_names.xls)
 is included in this repository in JSON format (under `data`); this file is used
 to translate the geographical codes used by Statistics Sweden into the unit
