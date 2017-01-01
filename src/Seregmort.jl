@@ -4,7 +4,7 @@ using JSONStat, Requests, DataStructures, DataFrames, PyCall, PyPlot
 import JSON
 @pyimport cartopy.io.shapereader as shpreader
 @pyimport cartopy.crs as ccrs
-export metadata, alllregions, ndeaths, npop, 
+export metadata, alllregions, unchanged_regions, ndeaths, npop, munis_incounty,
 propplot_dict, propplot, propscatsexes_dict, propscatsexes,propmap_dict, propmap, 
 catot_yrsdict, capop_yrsdict, catot_mapdict, capop_mapdict,
 threep, fourp, fivep
