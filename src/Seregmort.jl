@@ -386,6 +386,7 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 		framealpha = 0.75, bbox_to_anchor=(1,1))
 	title(*("Döda $(numcauseal)/$(denomcauseal)\n",
 		"$(sexal) $(ageal) $(startyear)\u2013$(endyear)"))
+	subplots_adjust(right = 0.8)
 	show()
 	DataFrame(code = regcodes, alias = regals, prop = prop)
 end
