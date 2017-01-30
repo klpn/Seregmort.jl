@@ -337,8 +337,11 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	propdict = Dict(zip(regcodes, prop))
 	units = map(scb_to_unit, regcodes)
 	regdict = Dict(zip(units, regcodes))
-	percentiles = percfunc(prop) 
-	ax = plt[:axes](projection = ccrs.TransverseMercator())
+	percentiles = percfunc(prop)
+	proj = ccrs.LambertConformal(central_longitude = 10, central_latitude = 52,
+		standard_parallels = (35,65), false_easting = 4000000,
+		false_northing = 2800000, globe = ccrs.Globe(ellipse = "GRS80"))
+	ax = plt[:axes](projection = proj)
 	boundlist = []
 	facecolor = "red"
 	for region_rec in region_shp[:records]()
@@ -356,8 +359,7 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 					break
 				end
 			end
-			ax[:add_geometries](region_rec[:geometry],
-				ccrs.TransverseMercator(),
+			ax[:add_geometries](region_rec[:geometry], proj,
 				edgecolor = "black", facecolor = facecolor)
 			ax[:annotate](regdict[regunit], (xmean, ymean),
 				ha = "center")
