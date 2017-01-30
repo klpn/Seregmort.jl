@@ -4,14 +4,15 @@ using JSONStat, Requests, DataStructures, DataFrames, PyCall, PyPlot
 import JSON
 @pyimport cartopy.io.shapereader as shpreader
 @pyimport cartopy.crs as ccrs
-export metadata, alllregions, unchanged_regions, ndeaths, npop, munis_incounty,
+export metadata, allregions, unchanged_regions, ndeaths, npop, munis_incounty,
 propplot_dict, propplot, propscatsexes_dict, propscatsexes,propmap_dict, propmap, 
 catot_yrsdict, capop_yrsdict, catot_mapdict, capop_mapdict,
 threep, fourp, fivep
 
 MORTURL = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak"
 POPURL = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/BefolkningNy"
-G_UNITS = JSON.parsefile("data/g_units.json")
+DATAPATH = normpath(Pkg.dir(), "Seregmort", "data")
+G_UNITS = JSON.parsefile(normpath(DATAPATH, "g_units.json"))
 
 PyDict(matplotlib["rcParams"])["axes.formatter.use_locale"] = true
 matplotlib[:style][:use]("ggplot")
@@ -420,7 +421,7 @@ function capop_yrsdict(region, cause)
 end
 
 function catot_mapdict(regvalues, cause, startyear, endyear,
-	shapefname = "data/2504/__pgsql2shp2504_tmp_table.shp")
+	shapefname = normpath(DATAPATH, "2504", "__pgsql2shp2504_tmp_table.shp"))
 	cadeaths = ndeaths(regvalues, [cause],
 		yearvalues = yearrange(startyear, endyear))
 	totdeaths = ndeaths(regvalues, ["TOT"],
@@ -437,7 +438,7 @@ function catot_mapdict(regvalues, cause, startyear, endyear,
 end
 
 function capop_mapdict(regvalues, cause, startyear, endyear,
-	shapefname = "data/2504/__pgsql2shp2504_tmp_table.shp")
+	shapefname = normpath(DATAPATH, "2504", "__pgsql2shp2504_tmp_table.shp"))
 	cadeaths = ndeaths(regvalues, [cause],
 		yearvalues = yearrange(startyear, endyear))
 	pop = npop(regvalues, yearvalues = yearrange(startyear, endyear))
