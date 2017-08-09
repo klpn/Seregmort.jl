@@ -40,7 +40,7 @@ following multi-cause chapters are supported:
 | 44-45 | Ill-defined causes
 | 46-52 | External causes
 
-##Examples
+## Examples
 Save data on deaths from circulatory disorders in Västmanland County for the
 whole period in a dictionary, and plot a smoothed diagram showing the time
 trend for proportion of deaths due to this cause group for females and males in
