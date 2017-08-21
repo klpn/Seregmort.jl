@@ -23,7 +23,8 @@ package.
 
 The package uses grouping functions from my
 [Mortchartgen](https://github.com/klpn/Mortchartgen.jl) package. You can
-install that package e.g. by `Pkg.clone(https://github.com/klpn/Mortchartgen.jl.git)`.
+install that package e.g. by
+`Pkg.clone("https://github.com/klpn/Mortchartgen.jl.git")`.
 
 Possible values for regions, age groups, sexes and causes of death can be retrieved by `metadata()` which sends a GET request to the [mortality table](http://api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak).
 
