@@ -1,11 +1,11 @@
 module Seregmort
 
 using JSONStat, Requests, DataStructures, DataFrames, PyCall, PyPlot
-import JSON
+import JSON, Mortchartgen
 @pyimport cartopy.io.shapereader as shpreader
 @pyimport cartopy.crs as ccrs
 export metadata, allregions, unchanged_regions, ndeaths, npop, munis_incounty,
-propplot_dict, propplot, propscatsexes_dict, propscatsexes,propmap_dict, propmap, 
+propplotyrs_dict, propplotyrs, propscatsexes_dict, propscatsexes,propmap_dict, propmap, 
 catot_yrsdict, capop_yrsdict, catot_mapdict, capop_mapdict,
 threep, fourp, fivep
 
@@ -28,7 +28,7 @@ end
 
 function metadata(url = MORTURL)
 	req = Requests.get(url)
-	JSON.parse(Requests.readall(req), dicttype = DataStructures.OrderedDict)
+	JSON.parse(Requests.readstring(req), dicttype = DataStructures.OrderedDict)
 end
 
 function causealias(cause, dim)
@@ -164,7 +164,7 @@ function ndeaths(regvalues, causevalues;  agevalues = allages(),
 	sexvalues = ["1"; "2"], yearvalues = yearrange())
 	qjson = mortreqjson(regvalues, causevalues, agevalues, sexvalues, yearvalues)
 	req = Requests.post(MORTURL, json = qjson)
-	reqjsonstat = JSON.parse(Requests.readall(req),
+	reqjsonstat = JSON.parse(Requests.readstring(req),
 		dicttype = DataStructures.OrderedDict)
 	readjsonbundle(reqjsonstat)["dataset"]
 end
@@ -173,7 +173,7 @@ function npop(regvalues; agevalues = allages("pop"),
 	sexvalues = ["1"; "2"], yearvalues = yearrange())
 	qjson = popreqjson(regvalues, agevalues, sexvalues, yearvalues)
 	req = Requests.post(POPURL, json = qjson)
-	reqjsonstat = JSON.parse(Requests.readall(req),
+	reqjsonstat = JSON.parse(Requests.readstring(req),
 		dicttype = DataStructures.OrderedDict)
 	readjsonbundle(reqjsonstat)["dataset"]
 end
@@ -181,32 +181,13 @@ end
 dfarrmatch(col, arr) = map((x) -> in(x, arr), Vector(col))
 
 subframe_sray(df, sex, region, agelist, years) = df[((df[:Kon].==sex)
-	& (df[:Region].==region) & (dfarrmatch(df[:Alder], agelist))
-	& (dfarrmatch(df[:Tid], years))), :]
-
-dfgrp(df, grpcol, f = sum) = by(df, grpcol, x -> DataFrame(value = f(x[:value])))
-
-function grpprop(numframe_sub, denomframe_sub, grpcol, agemean)
-	if agemean
-		propfr_agesp = DataFrame()
-		propfr_agesp[grpcol] = numframe_sub[grpcol]
-		propfr_agesp[:value] = numframe_sub[:value]./denomframe_sub[:value]
-		return dfgrp(propfr_agesp, grpcol, mean)
-	else
-		numgrp = dfgrp(numframe_sub, grpcol)
-		denomgrp = dfgrp(denomframe_sub, grpcol)
-		propfr_agegr = DataFrame()
-		propfr_agegr[grpcol] = numgrp[grpcol]
-		propfr_agegr[:value] = numgrp[:value]./denomgrp[:value]
-		return propfr_agegr
-	end
-end
+	.& (df[:Region].==region) .& (dfarrmatch(df[:Alder], agelist))
+	.& (dfarrmatch(df[:Tid], years))), :]
 
 function prop_timegrp(numframe, denomframe, sex, region, agelist, years, agemean)
 	numframe_sub = subframe_sray(numframe, sex, region, agelist, years)
 	denomframe_sub = subframe_sray(denomframe, sex, region, agelist, years)
-	grpprop(numframe_sub, denomframe_sub, :Tid, agemean)
-
+	Mortchartgen.grpprop(numframe_sub, denomframe_sub, :Tid, agemean)
 end
 
 propplotyrs_dict(startage, endage, pardict,
@@ -237,12 +218,12 @@ function propplotyrs(numframe, denomframe, numdim, denomdim, numcause, denomcaus
 end
 
 subframe_sa(df, sex, agelist) = df[((df[:Kon].==sex)
-	& (dfarrmatch(df[:Alder], agelist))), :]
+	.& (dfarrmatch(df[:Alder], agelist))), :]
 
 function prop_reggrp(numframe, denomframe, sex, agelist, agemean)
 	numframe_sub = subframe_sa(numframe, sex, agelist)
 	denomframe_sub = subframe_sa(denomframe, sex, agelist)
-	grpprop(numframe_sub, denomframe_sub, :Region, agemean)
+	Mortchartgen.grpprop(numframe_sub, denomframe_sub, :Region, agemean)
 end
 
 propscatsexes_dict(startage, endage, pardict, agemean = false) =
