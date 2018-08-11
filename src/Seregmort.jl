@@ -272,26 +272,26 @@ perc_round(value) = replace("$(round(value, 4))", ".", ",")
 
 threep(prop) = 
 	[
-	Dict("col" => "lightsalmon", "value" => percentile(prop, 1/3*100));
-	Dict("col" => "tomato", "value" => percentile(prop, 2/3*100));
-	Dict("col" => "red", "value" => percentile(prop, 100))
+	Dict("col" => "lightsalmon", "value" => quantile(prop, 1/3));
+	Dict("col" => "tomato", "value" => quantile(prop, 2/3));
+	Dict("col" => "red", "value" => quantile(prop, 1))
 	]
 
 fourp(prop) = 
 	[
-	Dict("col" => "lightyellow", "value" => percentile(prop, 1/4*100));
-	Dict("col" => "yellow", "value" => percentile(prop, 2/4*100));
-	Dict("col" => "tomato", "value" => percentile(prop, 3/4*100));
-	Dict("col" => "red", "value" => percentile(prop, 100))
+	Dict("col" => "lightyellow", "value" => quantile(prop, 1/4));
+	Dict("col" => "yellow", "value" => quantile(prop, 2/4));
+	Dict("col" => "tomato", "value" => quantile(prop, 3/4));
+	Dict("col" => "red", "value" => quantile(prop, 1))
 	]
 
 fivep(prop) = 
 	[
-	Dict("col" => "lightyellow", "value" => percentile(prop, 1/5*100));
-	Dict("col" => "yellow", "value" => percentile(prop, 2/5*100));
-	Dict("col" => "orange", "value" => percentile(prop, 3/5*100));
-	Dict("col" => "tomato", "value" => percentile(prop, 4/5*100));
-	Dict("col" => "red", "value" => percentile(prop, 100))
+	Dict("col" => "lightyellow", "value" => quantile(prop, 1/5));
+	Dict("col" => "yellow", "value" => quantile(prop, 2/5));
+	Dict("col" => "orange", "value" => quantile(prop, 3/5));
+	Dict("col" => "tomato", "value" => quantile(prop, 4/5));
+	Dict("col" => "red", "value" => quantile(prop, 1))
 	]
 
 propmap_dict(startage, endage, sex, pardict, percfunc = threep, agemean = false) =
@@ -318,7 +318,7 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	propdict = Dict(zip(regcodes, prop))
 	units = map(scb_to_unit, regcodes)
 	regdict = Dict(zip(units, regcodes))
-	percentiles = percfunc(prop)
+	quantiles = percfunc(prop)
 	proj = ccrs.LambertConformal(central_longitude = 10, central_latitude = 52,
 		standard_parallels = (35,65), false_easting = 4000000,
 		false_northing = 2800000, globe = ccrs.Globe(ellipse = "GRS80"))
@@ -334,9 +334,9 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 				boundlist[end][3]])
 			ymean = mean([boundlist[end][2];
 				boundlist[end][4]])
-			for percentile in percentiles
-				if propdict[regdict[regunit]] <= percentile["value"]
-					facecolor = percentile["col"]
+			for quantile in quantiles
+				if propdict[regdict[regunit]] <= quantile["value"]
+					facecolor = quantile["col"]
 					break
 				end
 			end
@@ -354,15 +354,15 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	ax[:set_ylim](yminimum, ymaximum)
 	percpatches = []
 	perclabels = []
-	for (i, percentile) in enumerate(percentiles)
+	for (i, quantile) in enumerate(quantiles)
 		percpatch = matplotlib[:patches][:Rectangle]((0, 0), 1, 1,
-			facecolor = percentile["col"])
+			facecolor = quantile["col"])
 		percpatches = vcat(percpatches, percpatch)
 		if i == 1
 			perclabel = *("\u2265", perc_round(minimum(prop)),
-				"\n\u2264", perc_round(percentile["value"]))
+				"\n\u2264", perc_round(quantile["value"]))
 		else
-			perclabel = *("\u2264", perc_round(percentile["value"]))
+			perclabel = *("\u2264", perc_round(quantile["value"]))
 		end
 		perclabels = vcat(perclabels, perclabel)
 	end
