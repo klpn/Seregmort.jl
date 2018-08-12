@@ -1,7 +1,8 @@
 module Seregmort
 
 using JSONStat, Requests, DataStructures, DataFrames, PyCall, PyPlot
-import JSON, Mortchartgen
+import JSON
+import Mortchartgen: grpprop
 @pyimport cartopy.io.shapereader as shpreader
 @pyimport cartopy.crs as ccrs
 export metadata, allregions, unchanged_regions, ndeaths, npop, munis_incounty,
@@ -187,7 +188,7 @@ subframe_sray(df, sex, region, agelist, years) = df[((df[:Kon].==sex)
 function prop_timegrp(numframe, denomframe, sex, region, agelist, years, agemean)
 	numframe_sub = subframe_sray(numframe, sex, region, agelist, years)
 	denomframe_sub = subframe_sray(denomframe, sex, region, agelist, years)
-	Mortchartgen.grpprop(numframe_sub, denomframe_sub, :Tid, agemean)
+	grpprop(numframe_sub, denomframe_sub, :Tid, agemean)
 end
 
 propplotyrs_dict(startage, endage, pardict,
@@ -223,7 +224,7 @@ subframe_sa(df, sex, agelist) = df[((df[:Kon].==sex)
 function prop_reggrp(numframe, denomframe, sex, agelist, agemean)
 	numframe_sub = subframe_sa(numframe, sex, agelist)
 	denomframe_sub = subframe_sa(denomframe, sex, agelist)
-	Mortchartgen.grpprop(numframe_sub, denomframe_sub, :Region, agemean)
+	grpprop(numframe_sub, denomframe_sub, :Region, agemean)
 end
 
 propscatsexes_dict(startage, endage, pardict, agemean = false) =
