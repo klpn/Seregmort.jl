@@ -1,10 +1,17 @@
 module Seregmort
 
-using JSONStat, Requests, DataStructures, DataFrames, PyCall, PyPlot
+using JSONStat, HTTP, DataStructures, DataFrames, PyCall, PyPlot, Statistics
 import JSON
 import Mortchartgen: grpprop
-@pyimport cartopy.io.shapereader as shpreader
-@pyimport cartopy.crs as ccrs
+
+const shpreader = PyNULL()
+const ccrs = PyNULL()
+
+function __init__()
+	copy!(shpreader, pyimport("cartopy.io.shapereader"))
+	copy!(ccrs, pyimport("cartopy.crs"))
+end
+
 export metadata, allregions, unchanged_regions, ndeaths, npop, munis_incounty,
 propplotyrs_dict, propplotyrs, propscatsexes_dict, propscatsexes,propmap_dict, propmap, 
 catot_yrsdict, capop_yrsdict, catot_mapdict, capop_mapdict,
@@ -12,14 +19,15 @@ threep, fourp, fivep
 
 MORTURL = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak"
 POPURL = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/BefolkningNy"
-DATAPATH = normpath(Pkg.dir(), "Seregmort", "data")
+MAINPATH = normpath(@__DIR__, "..")
+DATAPATH = normpath(MAINPATH, "data")
 G_UNITS = JSON.parsefile(normpath(DATAPATH, "g_units.json"))
 
 PyDict(matplotlib["rcParams"])["axes.formatter.use_locale"] = true
 matplotlib[:style][:use]("ggplot")
 
 function scb_to_unit(scb)
-	scbform = *("SE/", rpad(scb, 9, 0))
+	scbform = *("SE/", rpad(scb, 9, '0'))
 	if scbform in keys(G_UNITS)
 		return G_UNITS[scbform]
 	else
@@ -28,8 +36,8 @@ function scb_to_unit(scb)
 end
 
 function metadata(url = MORTURL)
-	req = Requests.get(url)
-	JSON.parse(Requests.readstring(req), dicttype = DataStructures.OrderedDict)
+	req = HTTP.request("GET", url)
+	JSON.parse(String(req.body), dicttype = DataStructures.OrderedDict)
 end
 
 function causealias(cause, dim)
@@ -40,12 +48,12 @@ function causealias(cause, dim)
 	end
 end
 
-regalias(region, dim) = lstrip(replace(dim["Region"]["category"]["label"][region], region, ""))
+regalias(region, dim) = lstrip(replace(dim["Region"]["category"]["label"][region], region => ""))
 
 sexalias(sex, dim) = dim["Kon"]["category"]["label"][sex]
 
 function agesplitter(age)
-	if contains(age, "-")
+	if occursin("-", age)
 	    return split(age, "-")
 	else
 	    return [age]
@@ -62,7 +70,7 @@ function ageslice(startage, endage, agemean)
 		agemeanstr = ""
 	end
 	if startage == endage
-		alias = *(replace(startage, "-", '\u2013'), agemeanstr)
+		alias = *(replace(startage, "-" => '\u2013'), agemeanstr)
 	else
 	    alias = *(agesplitter(startage)[1], "\u2013", agesplitter(endage)[end], agemeanstr)
 	end
@@ -115,7 +123,7 @@ function mortreqjson(regvalues, causevalues,  agevalues = allages(),
 	else
 		regfilter = "vs:RegionKommun95"
 	end
-	if contains(causevalues[1], "-")
+	if occursin("-", causevalues[1])
 		causefilter = "agg:DödsorsakKapitel"
 	else
 		causefilter = "item"
@@ -163,18 +171,18 @@ end
 
 function ndeaths(regvalues, causevalues;  agevalues = allages(),
 	sexvalues = ["1"; "2"], yearvalues = yearrange())
-	qjson = mortreqjson(regvalues, causevalues, agevalues, sexvalues, yearvalues)
-	req = Requests.post(MORTURL, json = qjson)
-	reqjsonstat = JSON.parse(Requests.readstring(req),
+	qjson = JSON.json(mortreqjson(regvalues, causevalues, agevalues, sexvalues, yearvalues))
+	req = HTTP.request("POST", MORTURL, [], qjson)
+	reqjsonstat = JSON.parse(String(req.body),
 		dicttype = DataStructures.OrderedDict)
 	readjsonbundle(reqjsonstat)["dataset"]
 end
 
 function npop(regvalues; agevalues = allages("pop"),
 	sexvalues = ["1"; "2"], yearvalues = yearrange())
-	qjson = popreqjson(regvalues, agevalues, sexvalues, yearvalues)
-	req = Requests.post(POPURL, json = qjson)
-	reqjsonstat = JSON.parse(Requests.readstring(req),
+	qjson = JSON.json(popreqjson(regvalues, agevalues, sexvalues, yearvalues))
+	req = HTTP.request("POST", POPURL, [], qjson)
+	reqjsonstat = JSON.parse(String(req.body),
 		dicttype = DataStructures.OrderedDict)
 	readjsonbundle(reqjsonstat)["dataset"]
 end
@@ -269,7 +277,7 @@ function propscatsexes(numframe, denomframe, numdim, denomdim, numcause, denomca
 		maleprop = maleprop)
 end
 
-perc_round(value) = replace("$(round(value, 4))", ".", ",")
+perc_round(value) = replace("$(round(value; digits=4))", "." => ",")
 
 threep(prop) = 
 	[
@@ -311,7 +319,7 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	yrints = map((x)->parse(Int, x), numframe[:Tid])
 	startyear = minimum(yrints)
 	endyear = maximum(yrints)
-	region_shp = shpreader.Reader(shapefname)
+	region_shp = shpreader[:Reader](shapefname)
 	propframe = prop_reggrp(numframe, denomframe, sex, agelist, agemean)
 	regcodes = propframe[:Region]
 	regals = map((x)->regalias(x, numdim), regcodes)
@@ -320,9 +328,9 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	units = map(scb_to_unit, regcodes)
 	regdict = Dict(zip(units, regcodes))
 	quantiles = percfunc(prop)
-	proj = ccrs.LambertConformal(central_longitude = 10, central_latitude = 52,
+	proj = ccrs[:LambertConformal](central_longitude = 10, central_latitude = 52,
 		standard_parallels = (35,65), false_easting = 4000000,
-		false_northing = 2800000, globe = ccrs.Globe(ellipse = "GRS80"))
+		false_northing = 2800000, globe = ccrs[:Globe](ellipse = "GRS80"))
 	ax = plt[:axes](projection = proj)
 	boundlist = []
 	facecolor = "red"

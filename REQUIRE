@@ -1,5 +1,9 @@
 julia 0.5
 JSONStat
-Requests
+HTTP
 PyPlot
+PyCall
 Mortchartgen
+DataStructures
+DataFrames
+JSON
