@@ -2,7 +2,7 @@ module Seregmort
 
 using JSONStat, HTTP, DataStructures, DataFrames, PyCall, PyPlot, Statistics
 import JSON
-import Mortchartgen: grpprop
+#import Mortchartgen: grpprop
 
 const shpreader = PyNULL()
 const ccrs = PyNULL()
@@ -10,6 +10,28 @@ const ccrs = PyNULL()
 function __init__()
 	copy!(shpreader, pyimport("cartopy.io.shapereader"))
 	copy!(ccrs, pyimport("cartopy.crs"))
+end
+
+dfgrp_agemean(df, grpcol, f = mean) =
+	combine(groupby(df, grpcol), x -> DataFrame(value = f(x[!, :value])))
+dfgrp_sum(df, grpcol, f = sum) =
+	combine(groupby(df, grpcol), x -> DataFrame(value = f(x[!, :value]), value_1 = f(x[!, :value_1])))
+
+function grpprop(numframe_sub, denomframe_sub, grpcol, agemean)
+	numdenomframe_sub =
+		innerjoin(numframe_sub, denomframe_sub, on = grpcol, makeunique = true)
+	if agemean
+		propfr_agesp = DataFrame()
+		propfr_agesp[!, grpcol] = numdenomframe_sub[!, grpcol]
+		propfr_agesp[!, :value] = numdenomframe_sub[!, :value]./numdenomframe_sub[!, :value_1]
+		return dfgrp_agemean(propfr_agesp, grpcol)
+	else
+		numdenomgrp = dfgrp_sum(numdenomframe_sub, grpcol)
+		propfr_agegr = DataFrame()
+		propfr_agegr[!, grpcol] = numdenomgrp[!, grpcol]
+		propfr_agegr[!, :value] = numdenomgrp[!, :value]./numdenomgrp[!, :value_1]
+		return propfr_agegr
+	end
 end
 
 export metadata, allregions, unchanged_regions, ndeaths, npop, munis_incounty,
@@ -189,9 +211,9 @@ end
 
 dfarrmatch(col, arr) = map((x) -> in(x, arr), Vector(col))
 
-subframe_sray(df, sex, region, agelist, years) = df[((df[:Kon].==sex)
-	.& (df[:Region].==region) .& (dfarrmatch(df[:Alder], agelist))
-	.& (dfarrmatch(df[:Tid], years))), :]
+subframe_sray(df, sex, region, agelist, years) = df[((df[!, :Kon].==sex)
+	.& (df[!, :Region].==region) .& (dfarrmatch(df[!, :Alder], agelist))
+	.& (dfarrmatch(df[!, :Tid], years))), :]
 
 function prop_timegrp(numframe, denomframe, sex, region, agelist, years, agemean)
 	numframe_sub = subframe_sray(numframe, sex, region, agelist, years)
@@ -218,7 +240,7 @@ function propplotyrs(numframe, denomframe, numdim, denomdim, numcause, denomcaus
 		sexal = sexalias(sex, numdim)
 		propframe = prop_timegrp(numframe, denomframe, 
 			sex, region, agelist, years, agemean) 
-		plot(yrints, propframe[:value], label = sexal)
+		plot(yrints, propframe[!, :value], label = sexal, "-*")
 	end
 	legend(framealpha = 0.5)
 	xlim(yrints[1], yrints[end])
@@ -226,8 +248,8 @@ function propplotyrs(numframe, denomframe, numdim, denomdim, numcause, denomcaus
 	title("Döda $(numcauseal)/$(denomcauseal)\n$(ageal) $(regal)")
 end
 
-subframe_sa(df, sex, agelist) = df[((df[:Kon].==sex)
-	.& (dfarrmatch(df[:Alder], agelist))), :]
+subframe_sa(df, sex, agelist) = df[((df[!, :Kon].==sex)
+	.& (dfarrmatch(df[!, :Alder], agelist))), :]
 
 function prop_reggrp(numframe, denomframe, sex, agelist, agemean)
 	numframe_sub = subframe_sa(numframe, sex, agelist)
@@ -247,7 +269,7 @@ function propscatsexes(numframe, denomframe, numdim, denomdim, numcause, denomca
 	ages = ageslice(startage, endage, agemean)
 	ageal = ages["alias"]
 	agelist = ages["agelist"]
-	yrints = map((x)->parse(Int, x), numframe[:Tid])
+	yrints = map((x)->parse(Int, x), numframe[!, :Tid])
 	startyear = minimum(yrints)
 	endyear = maximum(yrints)
 	sexframes = Dict()
@@ -257,9 +279,9 @@ function propscatsexes(numframe, denomframe, numdim, denomdim, numcause, denomca
 		sexframes[sex]["propframe"] = prop_reggrp(numframe, denomframe,
 			sex, agelist, agemean)
 	end
-	femprop = sexframes["2"]["propframe"][:value]
-	maleprop = sexframes["1"]["propframe"][:value]
-	regcodes = sexframes["2"]["propframe"][:Region]
+	femprop = sexframes["2"]["propframe"][!, :value]
+	maleprop = sexframes["1"]["propframe"][!, :value]
+	regcodes = sexframes["2"]["propframe"][!, :Region]
 	regals = map((x)->regalias(x, numdim), regcodes)
 	scatter(femprop, maleprop)
 	for (i, regcode) in enumerate(regcodes)
@@ -316,14 +338,14 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 	ages = ageslice(startage, endage, agemean)
 	ageal = ages["alias"]
 	agelist = ages["agelist"]
-	yrints = map((x)->parse(Int, x), numframe[:Tid])
+	yrints = map((x)->parse(Int, x), numframe[!, :Tid])
 	startyear = minimum(yrints)
 	endyear = maximum(yrints)
 	region_shp = shpreader[:Reader](shapefname)
 	propframe = prop_reggrp(numframe, denomframe, sex, agelist, agemean)
-	regcodes = propframe[:Region]
+	regcodes = propframe[!, :Region]
 	regals = map((x)->regalias(x, numdim), regcodes)
-	prop = propframe[:value]
+	prop = propframe[!, :value]
 	propdict = Dict(zip(regcodes, prop))
 	units = map(scb_to_unit, regcodes)
 	regdict = Dict(zip(units, regcodes))
@@ -349,7 +371,7 @@ function propmap(numframe, denomframe, numdim, denomdim, numcause, denomcause,
 					break
 				end
 			end
-			ax[:add_geometries](region_rec[:geometry], proj,
+			ax[:add_geometries]([region_rec[:geometry]], proj,
 				edgecolor = "black", facecolor = facecolor)
 			ax[:annotate](regdict[regunit], (xmean, ymean),
 				ha = "center")
