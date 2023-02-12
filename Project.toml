@@ -1,0 +1,16 @@
+name = "Seregmort"
+uuid = "1ce23eb5-4181-5a59-89e8-141712a5c203"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+JSONStat = "d64ed0dd-44f0-5909-96e1-9103abfe2b3d"
+Mortchartgen = "c3cb4af6-4750-5e1a-baa9-cc2b0a51c085"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[compat]
+julia = "≥ 0.5.0"
