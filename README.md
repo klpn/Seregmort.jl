@@ -4,8 +4,6 @@
 
 [![Coverage Status](https://coveralls.io/repos/klpn/Seregmort.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/klpn/Seregmort.jl?branch=master)
 
-[![codecov.io](https//codecov.io/github/klpn/Seregmort.jl/coverage.svg?branch=master)](https//codecov.io/github/klpn/Seregmort.jl?branch=master)
-
 This package can be used to analyze cause-specific regional Swedish mortality
 data at county or municipality level using the Statistics Sweden API ([API
 documentation in
