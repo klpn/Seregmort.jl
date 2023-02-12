@@ -13,9 +13,9 @@ function __init__()
 end
 
 dfgrp_agemean(df, grpcol, f = mean) =
-	combine(groupby(df, grpcol), x -> DataFrame(value = f(x[!, :value])))
+	combine(x -> DataFrame(value = f(x[!, :value])), groupby(df, grpcol))
 dfgrp_sum(df, grpcol, f = sum) =
-	combine(groupby(df, grpcol), x -> DataFrame(value = f(x[!, :value]), value_1 = f(x[!, :value_1])))
+	combine(x -> DataFrame(value = f(x[!, :value]), value_1 = f(x[!, :value_1])), groupby(df, grpcol))
 
 function grpprop(numframe_sub, denomframe_sub, grpcol, agemean)
 	numdenomframe_sub =
@@ -39,8 +39,8 @@ propplotyrs_dict, propplotyrs, propscatsexes_dict, propscatsexes,propmap_dict, p
 catot_yrsdict, capop_yrsdict, catot_mapdict, capop_mapdict,
 threep, fourp, fivep
 
-MORTURL = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak"
-POPURL = "http://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/BefolkningNy"
+MORTURL = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak"
+POPURL = "https://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/BefolkningNy"
 MAINPATH = normpath(@__DIR__, "..")
 DATAPATH = normpath(MAINPATH, "data")
 G_UNITS = JSON.parsefile(normpath(DATAPATH, "g_units.json"))
