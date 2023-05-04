@@ -7,15 +7,15 @@
 This package can be used to analyze cause-specific regional Swedish mortality
 data at county or municipality level using the Statistics Sweden API ([API
 documentation in
-English](https//www.scb.se/Grupp/OmSCB/API/API-description.pdf)). The database
+English](https://www.scb.se/Grupp/OmSCB/API/API-description.pdf)). The database
 accessible via the API covers deaths from 1969 to 1996 (a database covering
 cause-specific deaths at the county level occurring since 1997 is publicly
 accessible via [The National Board of Health and
-Welfare](https//www.socialstyrelsen.se/statistik/statistikdatabas/dodsorsaker)
+Welfare](https://www.socialstyrelsen.se/statistik/statistikdatabas/dodsorsaker)
 but cannot be used with the API). The package is a reimplementation in Julia of
 [seregmort](https://github.com/klpn/seregmort), which is written in Python.
 
-Data are retrieved in the [JSON-stat format](https//json-stat.org/) and saved
+Data are retrieved in the [JSON-stat format](https://json-stat.org/) and saved
 into Julia DataFrames using the [JSONStat](https://github.com/klpn/JSONStat.jl)
 package.
 
@@ -24,7 +24,7 @@ The package uses grouping functions from my
 install that package e.g. by
 `Pkg.clone("https://github.com/klpn/Mortchartgen.jl.git")`.
 
-Possible values for regions, age groups, sexes and causes of death can be retrieved by `metadata()` which sends a GET request to the [mortality table](https//api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak).
+Possible values for regions, age groups, sexes and causes of death can be retrieved by `metadata()` which sends a GET request to the [mortality table](https://api.scb.se/OV0104/v1/doris/sv/ssd/START/HS/HS0301/DodaOrsak).
 
 If the cause of death given contains a hyphen, it is assumed to be a chapter
 rather than a single cause of death (the `agg:DödsorsakKapitel` level). The
@@ -68,9 +68,9 @@ Using [cartopy](https://github.com/SciTools/cartopy), it is also possible to plo
 
 The script has been adapted to work with the shapefiles available (under a
 CCZero license) from National Archives of Sweden. You may download a [ZIP
-archive](https//riksarkivet.se/psi/NAD_Topografidata.zip) with these files and
+archive](https://riksarkivet.se/psi/NAD_Topografidata.zip) with these files and
 unzip it in the directory `data` under the main `Seregmort` directory. Data from
-[one of the Excel metadata files](https//riksarkivet.se/psi/g_units_names.xls)
+[one of the Excel metadata files](https://riksarkivet.se/psi/g_units_names.xls)
 is included in this repository in JSON format (under `data`); this file is used
 to translate the geographical codes used by Statistics Sweden into the unit
 codes used in the shapefiles.
@@ -96,7 +96,7 @@ propmap_dict("0", "90+", "1", pardict, fivep)
 
 There is limited support for visualizing mortality rates by using population
 size in the denominator (based on data from a [population
-table](https//api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/BefolkningNy).
+table](https://api.scb.se/OV0104/v1/doris/sv/ssd/START/BE/BE0101/BE0101A/BefolkningNy).
 However, this is difficult to implement fully, because the tables use differing
 age formats and (more importantly) because the population table uses a newer
 regional division. Currently, it should work for age groups between 5--9 and
