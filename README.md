@@ -7,8 +7,7 @@
 This package can be used to analyze cause-specific regional Swedish mortality
 data at county or municipality level using the Statistics Sweden API ([API
 documentation in
-English](https://www.scb.se/Grupp/OmSCB/API/API-description.pdf)). The database
-accessible via the API covers deaths from 1969 to 1996 (a database covering
+English](https://scb.se/contentassets/79c32c72783a4f67b202ad3189f921b9/api_description.pdf)). The database accessible via the API covers deaths from 1969 to 1996 (a database covering
 cause-specific deaths at the county level occurring since 1997 is publicly
 accessible via [The National Board of Health and
 Welfare](https://www.socialstyrelsen.se/statistik/statistikdatabas/dodsorsaker)
